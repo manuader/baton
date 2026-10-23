@@ -48,8 +48,13 @@ Whatever you assume without asking goes into "Standing rules", where the owner c
   - its dependencies;
   - the files it touches.
 - Any task that no command can check gets "build its check" as its first step.
-- With more than ~30 tasks, add a **board** (`tasks.md`): one line per task with its status. It has a single
-  writer, the controller.
+- Load the tasks into the **board**, `tasks.md` at the root of the work branch, from `assets/tasks.md`:
+  - one row per task: ID, task, status, dependencies, files it owns, "Done when";
+  - grouped by phase, under `### <phase>` headings;
+  - status ⏳ if it has no pending dependency, ⛔ otherwise.
+
+  Then run `bash <skill>/scripts/progress.sh tasks.md --update` and commit it. From then on the controller is its
+  only writer, and the progress always comes from `progress.sh`.
 - The plan is versioned in the repo, on the work branch. The reasoning behind its decisions goes into this planning
   session's doc.
 

@@ -8,6 +8,7 @@ BASE: `<work branch>` = `<sha>`. Integration: only the controller merges.
 - **Before handing back, commit everything; leave no uncommitted changes or stray new files.** Commits: <house
   style>. Push your branch.
 - Forbidden: `git push --force`, deleting remote branches, `git add -A`, `pkill -f`, `while pgrep -f …`.
+- Don't edit `tasks.md`, the journal or `OWNER.md`: report, and the controller records it.
 - <Scarce profile> **DO NOT BUILD:** don't build the app, run UI tests or boot simulators. Write the code carefully
   (read the real types and signatures before using them; no invented APIs), write its tests without running them,
   and commit. Cheap exception: <tests that don't spin up the heavy build>.

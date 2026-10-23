@@ -45,7 +45,8 @@ You are in this section because the owner is talking to you in a chat and you do
    - For visual decisions, offer two options: an A/B mockup made with the real assets.
 2. **Read code if needed**, to name files, functions and the current state. Edit nothing in the repo except the spec
    and the inbox.
-3. **Before numbering a task**, read the spec and `OWNER.md`. The relay adds tasks too: two "B13" once collided.
+3. **Before numbering a task**, read the board `tasks.md`, the spec and `OWNER.md`. The relay adds tasks too: two
+   "B13" once collided. Don't edit the board: the relay adds the row when it takes the request.
 4. **Load the request:**
    - in `OWNER.md`: a block with date, time, the owner's exact words, and `[ ]` tasks, each with its "Done when";
    - in the spec, if the request is large: write it on your own branch, or leave it in `OWNER.md` for the relay to
@@ -66,6 +67,10 @@ You are in this section because the owner is talking to you in a chat and you do
 - Also add the rule to "Standing rules" in `OWNER.md`.
 
 **If the owner asks where the relay is:** read the LOCK and answer with the link `[title](#<session>)`.
+
+**If the owner asks how far along it is:** run `bash <skill>/scripts/progress.sh tasks.md` on the work branch. It
+is read-only. Answer with its numbers: done over total, what is in flight, what is waiting on them, and what is
+next.
 
 **If no LOCK is held and the owner wants it implemented now:**
 

@@ -17,6 +17,7 @@ FACTS:
 - Work branch: `{{BRANCH}}`, in {{WORK_WORKTREE}}. Use absolute paths and `git -C <path>`.
 - Run: {{REPO}}/.claude/avo/{{RUN}}/ (journal.md, LOCK, OWNER.md, OWNER-TODO.md, STATUS.md).
 - Skill: {{SKILL_DIR}} (scripts/lock.sh, scripts/clean-worktrees.sh).
+- Board: `tasks.md` at the root of the work branch. Progress: `bash {{SKILL_DIR}}/scripts/progress.sh tasks.md`.
 - Oracle: `{{FAST_ORACLE}}` at every integration; `{{FULL_ORACLE}}` at wave close.
 - Resource profile: {{SCARCE_OR_AMPLE}}. Cores: {{CORES}}. At most {{MAX_AGENTS}} agents at a time; one heavy thing at a time.
 - Task worktrees: `git -C {{REPO}} worktree add -b {{PREFIX}}/<task> {{REPO}}/.claude/worktrees/{{PREFIX}}-<task> {{BRANCH}}`.
@@ -43,8 +44,9 @@ HOUSE RULES:
   chat; without it, it goes to OWNER-TODO.md with the exact command.
 - Owner gates (never skipped): {{GATES}}. Every deliverable the owner approves is sent to them as soon as it exists.
 
-FINISH: `{{FINISH_ORACLE}}` green and OWNER-TODO.md holding only the owner's items. Then: a report (Artifact),
-PushNotification if available, a final message with what is left in OWNER-TODO.md, and {{WHEN_DONE}}.
+FINISH: every task on the board ✅ or ⏭️ (progress N/N), `{{FINISH_ORACLE}}` green, and OWNER-TODO.md holding only
+the owner's items. Then: a report (Artifact) with the board's final progress, PushNotification if available, a final
+message with what is left in OWNER-TODO.md, and {{WHEN_DONE}}.
 
 If everything left is waiting on an owner gate, don't invent work: log it in the journal and OWNER-TODO.md, and
 close.

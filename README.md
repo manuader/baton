@@ -18,14 +18,34 @@ game, and every rule in it exists because breaking it once cost hours.
         │ yes
         ▼
   relay N takes the LOCK (heartbeat every 10 min)
-        │  reads OWNER.md → newest handoff → general → journal
-        │  works the plan: waves of subagents, each in its own git worktree, one owner per file
-        │  logs every task boundary in the journal and STATUS.md
+        │  reads OWNER.md → tasks.md → newest handoff → general → journal
+        │  works the board (tasks.md): waves of subagents, each in its own git worktree, one owner per file
+        │  at every task boundary: updates the board, recomputes progress, logs the journal and STATUS.md
         ▼
   at ~300k tokens of context
         │  waits for every subagent → session doc + handoff + general → push → releases the LOCK → ends
         ▼
   the next hourly firing takes the baton with a fresh context
+```
+
+The board lives in the repo, on the work branch:
+
+| File | What it holds |
+|---|---|
+| `tasks.md` | one row per task: ✅ done · 🟢 coded · 🔧 fixing · 🔄 in flight · ⏳ ready · ⛔ blocked · 🔒 waiting on you · ⏭️ dropped |
+
+Progress is computed from it, never typed by hand:
+
+```text
+$ bash ~/.claude/skills/baton/scripts/progress.sh tasks.md
+Progress: 42/118 done (35.6 %) · 🔄 3 in flight · 🟢 2 coded · 🔧 1 fixing · ⏳ 20 ready · ⛔ 45 blocked · 🔒 5 owner · ⏭️ 4 dropped
+
+By phase:
+- Phase 1 — data model: 18/18 (100 %)
+- Phase 2 — API: 24/40 (60 %)
+- Phase 3 — web app: 0/60 (0 %)
+
+Next ready: P2-T17, P2-T18, P3-T01
 ```
 
 The run lives in `.claude/avo/<date>-<slug>/`, outside git:
@@ -51,7 +71,7 @@ The rules that make it work:
 
 | Path | What it is |
 |---|---|
-| `skills/baton/` | The methodology: relay protocol, dispatch, owner channel, setup, traps, templates, `lock.sh`, `clean-worktrees.sh` |
+| `skills/baton/` | The methodology: relay protocol, dispatch, owner channel, setup, traps, templates (board, inbox, routine…), `lock.sh`, `progress.sh`, `clean-worktrees.sh` |
 | `skills/avo-harness/` | The long-horizon loop: oracle → hypothesis → variants → evidence → commit/revert, with a journal that outlives the context |
 | `skills/handoff-system/`, `skills/writing-session-handoff/`, `skills/writing-general-handoff/` | The three-document handoff system every relay closes with |
 | `agents/avo-supervisor.md` | A context-free subagent that reads the journal and says CONTINUE, PIVOT, LEVEL UP or STOP AND ASK |
@@ -101,7 +121,8 @@ The setup session:
 
 1. asks you a handful of questions: the work branch, protected areas, what counts as external, your approval
    gates, and how heavy your builds are;
-2. turns the plan into tasks with checkable "Done when" criteria;
+2. turns the plan into the board, `tasks.md`: tasks grouped by phase, each with its dependencies, the files it
+   owns and a checkable "Done when";
 3. creates the run folder and its files;
 4. shows you the hourly routine and creates it **after you say yes**.
 
@@ -111,6 +132,8 @@ From then on:
   the working chat.
 - **To ask for something,** open any chat in the project and say it. That session writes it into `OWNER.md` and
   pings the active relay.
+- **To see how far along it is,** run `progress.sh tasks.md`, or ask any chat in the project "how far along are
+  we?". Every relay also pastes the progress line into `STATUS.md`.
 - **Once in a while,** check `OWNER-TODO.md`. That's where the relays leave what only you can do, each item with the
   exact command or link.
 - **When the plan is done,** the last relay sends you a report and disables the routine, if you allowed that at

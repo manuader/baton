@@ -64,31 +64,37 @@ taken <taken_at> · last heartbeat <last_heartbeat> (N min ago) · <working | wa
    stale LOCK), plus quota and context on arrival. Always append through Bash (`>>`). Never rewrite the journal.
 6. **Reading,** in this order:
    1. `OWNER.md`: every `[ ]` is an owner request, and the "Standing rules" override any default;
-   2. the newest handoff in `handoffs/`;
-   3. the general `docs/HANDOFF.md`: the note at the top, and whatever concerns you;
-   4. the journal: charter, current state, discarded, and the last relay block;
-   5. `git log --oneline` and `git status` since the handoff's date, on the work branch;
-   6. the run's oracle, in its cheap mode if it has one, to know where things stand today.
-7. **Status.** Rewrite `STATUS.md` (template: `assets/STATUS.md`).
+   2. the board `tasks.md` on the work branch, to see what is left. Get the numbers with
+      `bash <skill>/scripts/progress.sh tasks.md`;
+   3. the newest handoff in `handoffs/`;
+   4. the general `docs/HANDOFF.md`: the note at the top, and whatever concerns you;
+   5. the journal: charter, current state, discarded, and the last relay block;
+   6. `git log --oneline` and `git status` since the handoff's date, on the work branch;
+   7. the run's oracle, in its cheap mode if it has one, to know where things stand today.
+7. **Status.** Rewrite `STATUS.md` (template: `assets/STATUS.md`). Its progress line is
+   `bash <skill>/scripts/progress.sh tasks.md --line`, pasted as is.
 
 ## 3. Work
 
 - **Order:**
-  1. the `[ ]` items in `OWNER.md` that aren't waiting on an owner gate;
+  1. the `[ ]` items in `OWNER.md` that aren't waiting on an owner gate. Each one gets its row on the board
+     ("Owner requests added by relays"), numbered after reading the board and `OWNER.md`, so IDs never collide;
   2. the journal's "Next step";
-  3. the plan's queue.
+  3. the board's ⏳ tasks, in the plan's order (`progress.sh` lists the next ready ones).
 - **Each task** goes through the loop: hypothesis → variants → action → oracle → commit or revert. Use
   `avo-harness`, and dispatch per `references/dispatch.md`.
 - **At every task boundary:**
   - read the context (`get_usage("self").context.tokensUsed`) and the quota;
-  - tick the box: `[x] <date> relay N — what was done`, deleting nothing;
+  - update the task's row on the board (`references/dispatch.md` §7 has the transitions), then
+    `bash <skill>/scripts/progress.sh tasks.md --update`;
+  - tick the box in `OWNER.md`: `[x] <date> relay N — what was done`, deleting nothing;
   - append a timestamped line to the journal;
   - rewrite `STATUS.md`.
 - **Thresholds:**
   - from **~250k**, start no new large task;
   - at **~300k**, or with the 5-hour window at 90 %, start the close.
 - **Owner gates.** If a task needs the owner:
-  - it goes to `OWNER-TODO.md` with the exact step, and to the journal;
+  - its row goes to 🔒, and the item goes to `OWNER-TODO.md` with the exact step, and to the journal;
   - you go on with something else;
   - if everything left waits on the owner, don't invent work. Log it, tell the owner (`PushNotification`, if
     available) and close.
@@ -117,6 +123,7 @@ Integrate what they deliver, or log it for the next relay.
   `handoffs/HANDOFF-<date>-<topic>.md`;
 - `writing-general-handoff`: a new entry at the top of the general, plus decisions, traps and the docs map if they
   changed;
+- the board, with every row current and its progress recomputed (`progress.sh tasks.md --update`);
 - the ticks in `OWNER.md`, and whatever is new in `OWNER-TODO.md`;
 - the commit, with explicit paths, and the push of the work branch.
 
@@ -155,9 +162,16 @@ Each line is a fact with a time, a hash or a number, not a story. Anything that 
 
 ## 5. Finish
 
-The work is done when the run's oracle is green and `OWNER-TODO.md` holds only the owner's items. Then:
+The work is done when all three hold:
 
-1. Write a report: what landed, the evidence (command and output) and what is left for the owner. Publish it as an
+- the board shows every task ✅ or ⏭️ (`progress.sh` says N/N);
+- the run's oracle is green;
+- `OWNER-TODO.md` holds only the owner's items.
+
+Then:
+
+1. Write a report: what landed (the board's final progress), the evidence (command and output) and what is left for
+   the owner. Publish it as an
    Artifact if setup planned for that.
 2. Notify the owner with `PushNotification`, if available, and in your final message.
 3. If the routine authorizes it in writing ("disable when done"), disable it with `update_scheduled_task`

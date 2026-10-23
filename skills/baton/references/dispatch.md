@@ -93,7 +93,24 @@ An opus review cost about 130k tokens. Keep it for where a mistake is expensive.
 6. As soon as a task is integrated, remove its worktree with `git worktree remove` (no `--force`) and its branch with
    `git branch -d`. Measured: 41 worktrees took 47 GB.
 
-## 7. Parallel sessions
+## 7. The board through a task's life
+
+The controller is the board's only writer. Subagents report, and the controller records it.
+
+| Moment | Row | Notes column |
+|---|---|---|
+| all deps ✅ and no agent in flight owns its files | ⛔ → ⏳ | |
+| dispatched | ⏳ → 🔄 | agent name and worktree |
+| handed back, reviewed, waiting for the wave's build or for integration | 🔄 → 🟢 | the agent's hash |
+| red in review, in the build or after integration | → 🔧 | the failure, in one line |
+| merged into the work branch and the oracle green | → ✅ | the integration hash |
+| needs the owner | → 🔒 | pointer to the `OWNER-TODO.md` item |
+| the owner drops it | → ⏭️ | why and when (only the owner drops tasks) |
+
+After every change, run `bash <skill>/scripts/progress.sh tasks.md --update`. The board is committed with the work
+branch at every wave close and at the relay's close.
+
+## 8. Parallel sessions
 
 - **Inside the relay:** 2–3 agents at most, on disjoint files.
 - **With another session in the same checkout** (the owner's, or a parallel one):
